@@ -1,101 +1,109 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-
-const App = () => {
-  const [input, setInput] = useState('');
-  const [result, setResult] = useState('');
-
-  const handlePress = (value) => {
-    if (value === 'C') {
-      setInput('');
-      setResult('');
-    } else if (value === '=') {
-      try {
-        setResult(eval(input).toString()); // Use eval with caution
-      } catch (error) {
-        setResult('Error');
-      }
-    } else {
-      setInput(input + value);
+import { StyleSheet, Text, TextInput, View, Button } from 'react-native';
+export default function App() {
+  // State variables
+  const [billAmount, setBillAmount] = useState('');
+  const [tipPercentage, setTipPercentage] = useState(10);
+  const [numberOfPeople, setNumberOfPeople] = useState(1);
+  const [totalAmount, setTotalAmount] = useState(null);
+  const [amountPerPerson, setAmountPerPerson] = useState(null);
+  // Function to calculate total and per person amount
+  const calculateTip = () => {
+    const bill = parseFloat(billAmount);
+    if (isNaN(bill) || bill <= 0) {
+      alert('Please enter a valid bill amount');
+      return;
     }
-  };
+    const tip = (bill * tipPercentage) / 100;
+    const total = bill + tip;
+    const perPerson = total / numberOfPeople;
 
-  const buttons = [
-    ['C', '(', ')', '/'],
-    ['7', '8', '9', '*'],
-    ['4', '5', '6', '-'],
-    ['1', '2', '3', '+'],
-    ['0', '.', '=', '%'],
-  ];
+    setTotalAmount(total.toFixed(2));
+    setAmountPerPerson(perPerson.toFixed(2));
+  };
 
   return (
     <View style={styles.container}>
-      <View style={styles.resultContainer}>
-        <Text style={styles.input}>{input}</Text>
-        <Text style={styles.result}>{result}</Text>
-      </View>
+      <Text style={styles.header}>Tip Calculator</Text>
 
-      <View style={styles.buttonsContainer}>
-        {buttons.map((row, rowIndex) => (
-          <View key={rowIndex} style={styles.row}>
-            {row.map((button) => (
-              <TouchableOpacity
-                key={button}
-                style={styles.button}
-                onPress={() => handlePress(button)}
-              >
-                <Text style={styles.buttonText}>{button}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+      <TextInput
+        style={styles.input}
+        keyboardType="numeric"
+        placeholder="Enter Bill Amount"
+        value={billAmount}
+        onChangeText={(text) => setBillAmount(text)}
+      />
+
+      <Text style={styles.label}>Select Tip Percentage</Text>
+      <View style={styles.tipSelector}>
+        {[10, 15, 20].map((percentage) => (
+          <Button
+            key={percentage}
+            title={`${percentage}%`}
+            onPress={() => setTipPercentage(percentage)}
+          />
         ))}
       </View>
+      <TextInput
+        style={styles.input}
+        keyboardType="numeric"
+        placeholder="Enter Number of People"
+        value={String(numberOfPeople)}
+        onChangeText={(text) => setNumberOfPeople(parseInt(text))}
+      />
+
+      <Button title="Calculate" onPress={calculateTip} />
+
+      {totalAmount && (
+        <View style={styles.result}>
+          <Text style={styles.resultText}>Total Amount (with Tip): ${totalAmount}</Text>
+          <Text style={styles.resultText}>Amount Per Person: ${amountPerPerson}</Text>
+        </View>
+      )}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'space-between',
-    backgroundColor: '#f0f0f0',
-  },
-  resultContainer: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    alignItems: 'flex-end',
+    justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: '#f2f2f2',
+  },
+  header: {
+    fontSize: 30,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
   },
   input: {
-    fontSize: 32,
-    color: '#333',
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    marginBottom: 10,
+    paddingLeft: 10,
+    fontSize: 18,
   },
-  result: {
-    fontSize: 24,
-    color: '#007aff',
+  label: {
+    fontSize: 18,
+    marginBottom: 10,
+    marginTop: 20,
   },
-  buttonsContainer: {
-    flex: 3,
-    padding: 10,
-  },
-  row: {
+  tipSelector: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginBottom: 10,
+    marginBottom: 20,
   },
-  button: {
-    backgroundColor: '#007aff',
-    width: 70,
-    height: 70,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 35,
+  result: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: '#f7f7f7',
+    borderRadius: 5,
   },
-  buttonText: {
-    fontSize: 24,
-    color: '#fff',
+  resultText: {
+    fontSize: 18,
     fontWeight: 'bold',
+    marginVertical: 5,
   },
 });
-export default App;
